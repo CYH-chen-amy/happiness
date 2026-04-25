@@ -10,10 +10,11 @@
 // ============================================================
 
 export const firebaseConfig = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT.firebaseapp.com",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID",
+  apiKey: "AIzaSyBSgMSZfAFRUAO3lyHASuzwtQPCOHT2Rrk",
+  authDomain: "happiness-6bcea.firebaseapp.com",
+  projectId: "happiness-6bcea",
+  storageBucket: "happiness-6bcea.firebasestorage.app",
+  messagingSenderId: "617901743104",
+  appId: "1:617901743104:web:d772f8ca21067a72210ce5",
+  measurementId: "G-4350433GM6"
 };
