@@ -915,7 +915,7 @@ h1.title .quiet {
 
     document.getElementById("rEmoji").textContent = type.emoji;
     document.getElementById("rName").textContent = type.name;
-    document.getElementById("rScore").textContent = `${score} 分　·　${type.range}`;
+    document.getElementById("rScore").textContent = `${score} 分`;
     document.getElementById("rDesc").innerHTML = type.paragraphs.map(p => `<p>${p}</p>`).join("");
 
     showScreen("result");
