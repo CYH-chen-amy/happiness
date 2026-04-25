@@ -1,0 +1,1074 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>幸福的必要條件 · 交大領袖社</title>
+<meta name="description" content="一個關於家、距離、與內在主權的小測驗。" />
+
+<!-- 字型：標題用思源宋體（溫暖、書卷感）、內文用思源黑體 -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet" />
+
+<!-- Firebase（modular v10，CDN）-->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import { firebaseConfig } from "./firebase-config.js";
+
+  // 初始化（若尚未填入設定，仍可離線使用，只是不寫資料庫）
+  let db = null;
+  try {
+    if (firebaseConfig && firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith("YOUR_")) {
+      const app = initializeApp(firebaseConfig);
+      db = getFirestore(app);
+    }
+  } catch (e) {
+    console.warn("Firebase 未啟用：", e);
+  }
+
+  // 暴露給非 module 腳本使用
+  window.__saveResponse = async (payload) => {
+    if (!db) {
+      console.info("[本地模式] 收到回覆，但未連接 Firebase：", payload);
+      return { ok: false, local: true };
+    }
+    try {
+      const ref = await addDoc(collection(db, "responses"), {
+        ...payload,
+        createdAt: serverTimestamp(),
+        userAgent: navigator.userAgent,
+      });
+      return { ok: true, id: ref.id };
+    } catch (err) {
+      console.error("寫入失敗：", err);
+      return { ok: false, error: err.message };
+    }
+  };
+</script>
+
+<style>
+/* ----------------------------------------------------------
+   1. 主題變數（白天 / 夜晚）
+   ---------------------------------------------------------- */
+:root,
+[data-theme="day"] {
+  --bg:        #FAF1DD;        /* 燕麥奶 / 亞麻 */
+  --bg-grain:  rgba(120, 80, 40, 0.05);
+  --surface:   #FFFFFF;
+  --surface-2: #F2E4C9;        /* 暖沙 */
+  --ink:       #3D2E1F;        /* 深胡桃 */
+  --ink-soft:  #6B5440;
+  --muted:     #A89580;
+  --line:      #EAD9B8;
+  --accent:    #DC7A4F;        /* 赤陶紅 */
+  --accent-2:  #B5883A;        /* 蜂蜜金 */
+  --accent-3:  #B5883A;
+  --accent-soft: rgba(220,122,79,.13);
+  --shadow:    0 1px 0 rgba(61,46,31,.04), 0 10px 30px -12px rgba(120,80,40,.20);
+  --shadow-lg: 0 1px 0 rgba(61,46,31,.04), 0 36px 60px -28px rgba(120,80,40,.30);
+  --paper:
+    radial-gradient(1200px 600px at 80% -10%, rgba(220,122,79,.13), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(181,136,58,.13), transparent 60%);
+}
+
+[data-theme="night"] {
+  --bg:        #1B1410;        /* 濃縮咖啡 */
+  --bg-grain:  rgba(255, 220, 180, 0.04);
+  --surface:   #2A1F18;        /* 深可可 */
+  --surface-2: #36281F;        /* 中可可 */
+  --ink:       #FBEBD3;        /* 暖奶油 */
+  --ink-soft:  #DDC9AB;
+  --muted:     #968275;
+  --line:      #463327;
+  --accent:    #F4A887;        /* 桃絲（赤陶調亮） */
+  --accent-2:  #E0B96B;        /* 暖蜂蜜（金調亮） */
+  --accent-3:  #E0B96B;
+  --accent-soft: rgba(244,168,135,.16);
+  --shadow:    0 1px 0 rgba(0,0,0,.4), 0 14px 36px -10px rgba(0,0,0,.55);
+  --shadow-lg: 0 1px 0 rgba(0,0,0,.4), 0 40px 70px -30px rgba(0,0,0,.7);
+  --paper:
+    radial-gradient(1200px 600px at 80% -10%, rgba(244,168,135,.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(224,185,107,.08), transparent 60%);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Quicksand", "Noto Sans TC", -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: .01em;
+  transition: background-color .8s ease, color .8s ease;
+  min-height: 100vh;
+}
+
+/* 紙紋／顆粒感（用 SVG noise） */
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  background-image:
+    var(--paper),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.5'/></svg>");
+  background-size: auto, 160px 160px;
+  pointer-events: none;
+  opacity: .6;
+  z-index: 0;
+}
+[data-theme="night"] body::before { opacity: .35; }
+
+/* ----------------------------------------------------------
+   2. 頂部列：日期 / 時間 / 音樂開關
+   ---------------------------------------------------------- */
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 28px;
+  z-index: 50;
+  pointer-events: none;
+}
+.topbar > * { pointer-events: auto; }
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: .15em;
+  color: var(--ink-soft);
+}
+.brand .lh-icon {
+  width: 22px; height: 22px;
+  color: var(--accent);
+}
+
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.datetime {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-align: right;
+  line-height: 1.3;
+  letter-spacing: .05em;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 16px;
+  box-shadow: var(--shadow);
+}
+.datetime .date  { font-weight: 700; }
+.datetime .time  { color: var(--accent); margin-left: 8px; font-variant-numeric: tabular-nums; }
+
+.music-btn {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--accent);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow);
+  transition: transform .25s ease, background .3s ease, color .3s ease;
+}
+.music-btn:hover { transform: scale(1.06); }
+.music-btn svg { width: 18px; height: 18px; }
+.music-btn.playing { background: var(--accent); color: var(--bg); }
+.music-btn.playing .bars span {
+  animation-play-state: running;
+}
+.music-btn .bars { display:flex; gap:2px; align-items:flex-end; height:14px; }
+.music-btn .bars span {
+  width: 2.5px; background: currentColor; border-radius: 1px;
+  animation: bar 1s ease-in-out infinite;
+  animation-play-state: paused;
+}
+.music-btn .bars span:nth-child(1){ height:60%; animation-delay:-.2s; }
+.music-btn .bars span:nth-child(2){ height:100%; animation-delay:-.5s; }
+.music-btn .bars span:nth-child(3){ height:75%;  animation-delay:-.8s; }
+.music-btn .bars span:nth-child(4){ height:50%; }
+@keyframes bar {
+  0%,100% { transform: scaleY(.4); }
+  50%     { transform: scaleY(1);  }
+}
+
+.theme-pill {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px dashed var(--line);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all .25s;
+  letter-spacing: .1em;
+}
+.theme-pill:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ----------------------------------------------------------
+   3. 版面骨架
+   ---------------------------------------------------------- */
+.stage {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 110px 24px 80px;
+}
+
+.screen {
+  width: 100%;
+  max-width: 720px;
+  display: none;
+  animation: fadeUp .7s cubic-bezier(.2,.7,.2,1) both;
+}
+.screen.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 文字風格 */
+.eyebrow {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-size: 12px;
+  letter-spacing: .35em;
+  color: var(--accent);
+  margin-bottom: 18px;
+  text-transform: uppercase;
+}
+h1.title {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-weight: 900;
+  font-size: clamp(40px, 7vw, 64px);
+  line-height: 1.15;
+  margin: 0 0 28px;
+  letter-spacing: .01em;
+}
+h1.title .quiet {
+  display: block;
+  font-family: "Caveat", cursive;
+  font-weight: 500;
+  font-size: .35em;
+  color: var(--accent-2);
+  letter-spacing: .15em;
+  margin-bottom: 6px;
+}
+
+.poem {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-size: 18px;
+  line-height: 2.0;
+  color: var(--ink-soft);
+  border-left: 2px solid var(--accent);
+  padding: 4px 0 4px 22px;
+  margin: 36px 0;
+  font-weight: 500;
+}
+.poem .strong { color: var(--ink); font-weight: 700; }
+
+/* 名字輸入 */
+.field {
+  margin: 36px 0 28px;
+}
+.field label {
+  display: block;
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-size: 13px;
+  letter-spacing: .2em;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.field input {
+  width: 100%;
+  padding: 16px 20px;
+  font-family: inherit;
+  font-size: 16px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  transition: border-color .2s, box-shadow .2s;
+  outline: none;
+}
+.field input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+/* 按鈕 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 32px;
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: .15em;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s, background .3s;
+  box-shadow: var(--shadow);
+}
+.btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.btn:active { transform: translateY(0); }
+.btn.ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.btn .arrow { transition: transform .25s; }
+.btn:hover .arrow { transform: translateX(4px); }
+
+/* 進度 */
+.progress {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 36px;
+}
+.progress span {
+  flex: 1;
+  height: 3px;
+  background: var(--line);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+.progress span.done::after,
+.progress span.current::after {
+  content: ""; position: absolute; inset: 0;
+  background: var(--accent);
+  transform-origin: left;
+  animation: fill .5s ease forwards;
+}
+.progress span.current::after { background: var(--accent-3); }
+@keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* 題目 */
+.q-num {
+  font-family: "Caveat", cursive;
+  font-size: 28px;
+  color: var(--accent-2);
+  letter-spacing: .05em;
+}
+.q-text {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-weight: 700;
+  font-size: clamp(22px, 3.5vw, 30px);
+  margin: 4px 0 30px;
+  line-height: 1.45;
+}
+
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 18px;
+  padding: 18px 22px;
+  cursor: pointer;
+  transition: all .2s ease;
+  text-align: left;
+  font: inherit;
+  color: var(--ink);
+  width: 100%;
+}
+.option:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.option .badge {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  width: 28px; height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line);
+  transition: all .2s;
+}
+.option .text {
+  flex: 1;
+  line-height: 1.6;
+}
+.option.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.option.selected .badge {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.q-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 36px;
+  gap: 12px;
+}
+.q-actions .step-info {
+  font-family: "Caveat", cursive;
+  font-size: 18px;
+  color: var(--muted);
+}
+
+/* ----------------------------------------------------------
+   4. 結果頁
+   ---------------------------------------------------------- */
+.result-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  padding: 48px 40px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+.result-card::before {
+  content: "";
+  position: absolute;
+  top: -80px; right: -80px;
+  width: 240px; height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-soft), transparent 70%);
+  pointer-events: none;
+}
+.result-emoji {
+  font-size: 56px;
+  margin-bottom: 8px;
+  line-height: 1;
+}
+.result-name {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-weight: 900;
+  font-size: clamp(34px, 5vw, 48px);
+  letter-spacing: .02em;
+  margin: 0 0 8px;
+}
+.result-score {
+  font-family: "Caveat", cursive;
+  font-size: 22px;
+  color: var(--accent);
+  margin-bottom: 28px;
+  letter-spacing: .05em;
+}
+.result-desc {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-size: 17px;
+  line-height: 2;
+  color: var(--ink-soft);
+}
+.result-desc p { margin: 0 0 16px; }
+.result-desc p:last-child { margin: 0; }
+
+/* 活動資訊 */
+.event {
+  margin-top: 40px;
+  padding: 32px 28px;
+  border: 1px dashed var(--line);
+  border-radius: 22px;
+  background: var(--surface-2);
+  text-align: center;
+}
+.event .label {
+  font-family: "Caveat", cursive;
+  font-size: 22px;
+  color: var(--accent-2);
+  letter-spacing: .1em;
+}
+.event .club {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-weight: 900;
+  font-size: 24px;
+  margin: 6px 0 22px;
+  letter-spacing: .05em;
+}
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 8px;
+}
+.event-grid .item .k {
+  font-family: "Caveat", cursive;
+  font-size: 16px;
+  color: var(--muted);
+  letter-spacing: .1em;
+  margin-bottom: 4px;
+}
+.event-grid .item .v {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.again {
+  margin-top: 28px;
+  text-align: center;
+}
+
+/* 寫入回饋 */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--ink);
+  color: var(--bg);
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-size: 13px;
+  letter-spacing: .1em;
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  opacity: 0;
+  transition: opacity .35s, transform .35s;
+  z-index: 100;
+  pointer-events: none;
+  box-shadow: var(--shadow-lg);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ----------------------------------------------------------
+   5. RWD
+   ---------------------------------------------------------- */
+@media (max-width: 640px) {
+  .topbar { padding: 12px 14px; }
+  .brand .text { display: none; }
+  .datetime { font-size: 11px; padding: 6px 12px; }
+  .stage { padding: 100px 18px 60px; }
+  .poem { font-size: 16px; padding-left: 16px; }
+  .result-card { padding: 32px 22px; }
+  .event-grid { grid-template-columns: 1fr; gap: 14px; }
+  .theme-pill { display: none; }
+}
+
+/* 小燈塔的光暈 */
+.lh-glow { animation: glow 3.5s ease-in-out infinite; transform-origin: center; }
+@keyframes glow {
+  0%,100% { opacity: .55; }
+  50%     { opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<!-- =========================================================
+     頂部列：品牌 + 日期時間 + 音樂開關 + 主題切換
+     ========================================================= -->
+<header class="topbar">
+  <div class="brand">
+    <!-- 小燈塔（呼應背景音樂「光之塔」）-->
+    <svg class="lh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2 L9 7 H15 Z" />
+      <path d="M9 7 V11 H15 V7" />
+      <path d="M8 11 H16 L17 21 H7 Z" />
+      <line x1="9.5" y1="14" x2="14.5" y2="14" />
+      <circle class="lh-glow" cx="12" cy="9" r="1.4" fill="currentColor" stroke="none"/>
+    </svg>
+    <span class="text">交大領袖社</span>
+  </div>
+
+  <div class="top-right">
+    <button id="themeToggle" class="theme-pill" title="切換日 / 夜主題">自動 · 日</button>
+
+    <div id="datetime" class="datetime" aria-live="polite">
+      <span class="date">—</span>
+      <span class="time">—:—</span>
+    </div>
+
+    <button id="musicBtn" class="music-btn" aria-label="切換背景音樂" title="開啟 / 關閉背景音樂">
+      <!-- 預設：靜音圖示 -->
+      <svg id="iconMute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+        <line x1="23" y1="9" x2="17" y2="15"/>
+        <line x1="17" y1="9" x2="23" y2="15"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<!-- =========================================================
+     主舞台
+     ========================================================= -->
+<main class="stage">
+
+  <!-- 1) 歡迎 -->
+  <section class="screen active" data-screen="welcome">
+    <div class="eyebrow">A SMALL QUIZ · 給回家路上的你</div>
+    <h1 class="title">
+      <span class="quiet">The Necessary Conditions of Happiness</span>
+      幸福的必要條件
+    </h1>
+
+    <div class="poem">
+      幸福從來不是來自外界，<br/>
+      而是你是否找回<span class="strong">內在主權</span>。<br/>
+      能<span class="strong">掌握情緒</span>，<span class="strong">安頓身心</span>，<br/>
+      才具備通往幸福的必要條件。
+    </div>
+
+    <div class="field">
+      <label for="userName">先讓我們認識你（選填）</label>
+      <input id="userName" type="text" maxlength="30" placeholder="名字、暱稱或學號都可以" autocomplete="off" />
+    </div>
+
+    <button id="startBtn" class="btn">
+      開始前測
+      <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+      </svg>
+    </button>
+  </section>
+
+  <!-- 2) 題目（共 5 題，由 JS 動態渲染題目內容） -->
+  <section class="screen" data-screen="quiz">
+    <div class="progress" id="progress"></div>
+
+    <div class="q-num" id="qNum">Question 01</div>
+    <h2 class="q-text" id="qText">—</h2>
+
+    <div class="options" id="qOptions"></div>
+
+    <div class="q-actions">
+      <button id="prevBtn" class="btn ghost">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        上一題
+      </button>
+      <span class="step-info" id="stepInfo">1 / 5</span>
+      <button id="nextBtn" class="btn">
+        下一題
+        <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- 3) 結果 -->
+  <section class="screen" data-screen="result">
+    <div class="eyebrow" id="rEyebrow">YOUR RESULT</div>
+    <div class="result-card">
+      <div class="result-emoji" id="rEmoji">🌿</div>
+      <h2 class="result-name" id="rName">—</h2>
+      <div class="result-score" id="rScore">— / 20 分</div>
+      <div class="result-desc" id="rDesc"></div>
+    </div>
+
+    <div class="event">
+      <div class="label">— 想聊聊你的家、你的心嗎？—</div>
+      <div class="club">交大領袖社・歡迎您</div>
+      <div class="event-grid">
+        <div class="item"><div class="k">date</div><div class="v">4 / 23（四）</div></div>
+        <div class="item"><div class="k">time</div><div class="v">19:00 – 21:30<br/><span style="font-size:13px;color:var(--muted);">18:50 開放報到</span></div></div>
+        <div class="item"><div class="k">place</div><div class="v">活動中心 429A</div></div>
+      </div>
+    </div>
+
+    <div class="again">
+      <button id="restartBtn" class="btn ghost">再測一次</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- =========================================================
+     ⚠️ 永久 Audio：放在 body 最底層，且不放進任何會被切換的容器，
+        因此「開始測驗 / 換題目 / 看結果」過程中音樂都不會被打斷。
+     ========================================================= -->
+<audio id="bgMusic" src="music.mp3" loop preload="auto"></audio>
+
+<div id="toast" class="toast">已送出 ☁︎</div>
+
+<!-- =========================================================
+     主邏輯
+     ========================================================= -->
+<script>
+  /* ---------- 題庫 ---------- */
+  const QUESTIONS = [
+    {
+      q: "你平常回家的頻率如何？",
+      opts: [
+        { t: "每週或每兩週就會回家一次。", v: 4 },
+        { t: "大約一個月回家一次。", v: 3 },
+        { t: "通常一學期或有重要的事才回家。", v: 2 },
+        { t: "幾乎不回去，或有某些原因回不去 QAQ。", v: 1 },
+      ],
+    },
+    {
+      q: "平常喜歡回家嗎？",
+      opts: [
+        { t: "家是我充電的唯一來源，沒回家會覺得能量耗盡。", v: 4 },
+        { t: "平常還好，但覺得累或遇到挫折時，會想回家休息一下～", v: 3 },
+        { t: "沒有特別強烈的情感，把回家當作固定的習慣或責任。", v: 2 },
+        { t: "通常是有特別的事、重大節日，或被要求才會回家。", v: 1 },
+      ],
+    },
+    {
+      q: "跟父母講電話的頻率？",
+      opts: [
+        { t: "幾乎每天講電話，習慣分享生活大小事。", v: 4 },
+        { t: "不固定，想到對方或有有趣的事就直接打過去。", v: 3 },
+        { t: "通常是有具體的事情（例如生活費、確認行程）才會通話。", v: 2 },
+        { t: "幾乎不主動打，通常是等父母有事來電才通話。", v: 1 },
+      ],
+    },
+    {
+      q: "我跟父母的感情如何？",
+      opts: [
+        { t: "什麼都可以聊，雖然有些會令人擔心的事會稍微包裝一下。", v: 4 },
+        { t: "全家都不太會把愛掛在嘴邊，不特別開口關心，但懂彼此的心意。", v: 3 },
+        { t: "對話簡短、很容易就句點，缺乏深層的心理交流。", v: 2 },
+        { t: "講沒兩句就覺得快吵架了，為了和平，能不講話就不講話 😅", v: 1 },
+      ],
+    },
+    {
+      q: "我對家庭的看法是？",
+      opts: [
+        { t: "在外面受挫或心累，只要回家就能滿血復活！", v: 4 },
+        { t: "雖然生活習慣或價值觀偶有摩擦、相處起來有點累，但心底還是愛他們的。", v: 3 },
+        { t: "維持表面的和平與基本聯繫就好，過好各自的生活比較實在。", v: 2 },
+        { t: "家裡的氛圍讓我感到消耗，希望能盡可能拉開距離、互不干涉。", v: 1 },
+      ],
+    },
+  ];
+
+  /* ---------- 結果分型 ---------- */
+  const TYPES = {
+    sunflower: {
+      key: "sunflower",
+      emoji: "🌿",
+      name: "向日葵型",
+      range: "19 – 20 分",
+      paragraphs: [
+        "家庭是你非常重要的能量來源，你和家人的連結很深。當你在外受挫時，家確實是你最棒的避風港。",
+        "你的幸福感很大程度建立在「擁有一個溫暖的家」，但真正的身心安頓，也包含「當無法依賴外界時，自己也能接住自己」。試著在獨處時建立一套自我安撫的儀式，讓你的內心長出力量。這樣你的幸福將不再受制於距離，而是隨身攜帶。",
+      ],
+    },
+    tree: {
+      key: "tree",
+      emoji: "🌳",
+      name: "大樹型",
+      range: "15 – 18 分",
+      paragraphs: [
+        "你在獨立與家庭之間抓到了不錯的平衡。你愛你的家人，但也明白彼此是獨立的個體，懂得在需要時尋求慰藉，同時也能承受價值觀差異帶來的「甜蜜負擔」。",
+        "你已經具備了一定程度的內在主權，能理性看待情緒的起伏。未來的你可以試著把這份「安頓身心」的能力，擴展到生活中的其他關係裡。在愛人的同時保持自我，是你通往幸福的最佳狀態。",
+      ],
+    },
+    duckweed: {
+      key: "duckweed",
+      emoji: "🍂",
+      name: "浮萍型",
+      range: "8 – 14 分",
+      paragraphs: [
+        "你非常習慣獨立，甚至有點刻意與家庭保持距離。對你來說，「距離產生美感」是保護自己免於情緒消耗的策略。你看似自由，但內心深處可能偶爾會感到一絲無根的漂泊感。",
+        "真正的內在主權，不是「切斷聯繫」，而是「在關係中依然能保持自我」。你已經很會照顧自己的生活起居了，接下來的功課是覺察自己是否在逃避某些深層的情感？試著練習面對並接納自己的情緒，你會發現內心的平靜會變得更加踏實。",
+      ],
+    },
+    cactus: {
+      key: "cactus",
+      emoji: "🌵",
+      name: "孤島型",
+      range: "1 – 7 分",
+      paragraphs: [
+        "對你而言，原生家庭目前可能是一個壓力源大於避風港的地方。為了保護自己，你選擇拉開距離、減少接觸。你很勇敢地在為自己的生活奮鬥，但也可能常感到孤立無援。",
+        "如同引言所說：「幸福從來不是來自外界」。既然原本的家暫時無法提供溫暖，這正是你拿回生命主權的契機。請專注於「成為自己的避風港」，把向外索求期待的心力，拿來好好愛自己。當你能完全接納、安頓自己的身心時，你就是自己最大的靠山。",
+      ],
+    },
+  };
+
+  function classifyScore(score) {
+    if (score >= 19) return TYPES.sunflower;
+    if (score >= 15) return TYPES.tree;
+    if (score >= 8)  return TYPES.duckweed;
+    return TYPES.cactus;
+  }
+
+  /* ---------- 狀態 ---------- */
+  const state = {
+    name: "",
+    answers: Array(QUESTIONS.length).fill(null), // 每題分數值（1~4）
+    idx: 0,
+  };
+
+  /* ---------- 螢幕切換（不會碰到 audio） ---------- */
+  function showScreen(name) {
+    document.querySelectorAll(".screen").forEach(s => {
+      s.classList.toggle("active", s.dataset.screen === name);
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /* ---------- 渲染題目 ---------- */
+  function renderProgress() {
+    const wrap = document.getElementById("progress");
+    wrap.innerHTML = "";
+    for (let i = 0; i < QUESTIONS.length; i++) {
+      const dot = document.createElement("span");
+      if (i < state.idx) dot.classList.add("done");
+      else if (i === state.idx) dot.classList.add("current");
+      wrap.appendChild(dot);
+    }
+  }
+
+  function renderQuestion() {
+    const i = state.idx;
+    const Q = QUESTIONS[i];
+    document.getElementById("qNum").textContent =
+      "Question " + String(i + 1).padStart(2, "0");
+    document.getElementById("qText").textContent = Q.q;
+    document.getElementById("stepInfo").textContent = `${i + 1} / ${QUESTIONS.length}`;
+
+    const optsWrap = document.getElementById("qOptions");
+    optsWrap.innerHTML = "";
+    const labels = ["A", "B", "C", "D"];
+    Q.opts.forEach((o, k) => {
+      const btn = document.createElement("button");
+      btn.className = "option" + (state.answers[i] === o.v ? " selected" : "");
+      btn.innerHTML = `
+        <span class="badge">${labels[k]}</span>
+        <span class="text">${o.t}</span>
+      `;
+      btn.addEventListener("click", () => {
+        state.answers[i] = o.v;
+        renderQuestion();
+        // 自動往下一題（更順暢的體驗），最後一題不自動
+        if (i < QUESTIONS.length - 1) {
+          setTimeout(() => { state.idx++; renderProgress(); renderQuestion(); }, 280);
+        }
+      });
+      optsWrap.appendChild(btn);
+    });
+
+    // 按鈕狀態
+    document.getElementById("prevBtn").disabled = i === 0;
+    document.getElementById("prevBtn").style.opacity = i === 0 ? .35 : 1;
+
+    const nextBtn = document.getElementById("nextBtn");
+    if (i === QUESTIONS.length - 1) {
+      nextBtn.innerHTML = `查看結果 <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+    } else {
+      nextBtn.innerHTML = `下一題 <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
+    }
+    nextBtn.disabled = state.answers[i] === null;
+    nextBtn.style.opacity = state.answers[i] === null ? .35 : 1;
+
+    renderProgress();
+  }
+
+  function goNext() {
+    if (state.answers[state.idx] === null) return;
+    if (state.idx < QUESTIONS.length - 1) {
+      state.idx++;
+      renderQuestion();
+    } else {
+      finish();
+    }
+  }
+  function goPrev() {
+    if (state.idx === 0) return;
+    state.idx--;
+    renderQuestion();
+  }
+
+  /* ---------- 結算 ---------- */
+  function finish() {
+    const score = state.answers.reduce((a, b) => a + (b || 0), 0);
+    const type = classifyScore(score);
+
+    document.getElementById("rEmoji").textContent = type.emoji;
+    document.getElementById("rName").textContent = type.name;
+    document.getElementById("rScore").textContent = `${score} 分　·　${type.range}`;
+    document.getElementById("rDesc").innerHTML = type.paragraphs.map(p => `<p>${p}</p>`).join("");
+
+    showScreen("result");
+
+    // 寫入 Firestore（若有設定）
+    if (typeof window.__saveResponse === "function") {
+      window.__saveResponse({
+        name: state.name || "（匿名）",
+        score,
+        type: type.key,
+        typeName: type.name,
+        answers: state.answers.slice(),
+      }).then(res => {
+        if (res && res.ok) showToast("已雲端記錄 ☁︎");
+      });
+    }
+  }
+
+  function showToast(text) {
+    const t = document.getElementById("toast");
+    t.textContent = text;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2200);
+  }
+
+  /* ---------- 主題（白天 / 夜晚自動切換） ---------- */
+  const themeBtn = document.getElementById("themeToggle");
+  // mode: "auto" | "day" | "night"
+  let themeMode = "auto";
+
+  function applyTheme() {
+    const hour = new Date().getHours();
+    let theme = "day";
+    if (themeMode === "auto") {
+      // 18:00 ~ 隔日 06:00 為晚上
+      theme = (hour >= 18 || hour < 6) ? "night" : "day";
+    } else {
+      theme = themeMode;
+    }
+    document.documentElement.dataset.theme = theme;
+    const labelMap = { auto: "自動", day: "日", night: "夜" };
+    if (themeMode === "auto") {
+      themeBtn.textContent = `自動 · ${theme === "night" ? "夜" : "日"}`;
+    } else {
+      themeBtn.textContent = labelMap[themeMode];
+    }
+  }
+  themeBtn.addEventListener("click", () => {
+    themeMode = themeMode === "auto" ? "day"
+              : themeMode === "day"  ? "night"
+              : "auto";
+    applyTheme();
+  });
+
+  /* ---------- 日期 / 星期 / 時間 ---------- */
+  const WEEK = ["日", "一", "二", "三", "四", "五", "六"];
+  function tick() {
+    const now = new Date();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    const w = WEEK[now.getDay()];
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    const dt = document.getElementById("datetime");
+    dt.querySelector(".date").textContent = `${m} / ${d} （${w}）`;
+    dt.querySelector(".time").textContent = `${hh}:${mm}`;
+    applyTheme(); // 跨小時時自動切主題
+  }
+  tick();
+  setInterval(tick, 30 * 1000);
+
+  /* ---------- 音樂控制（永久不中斷的關鍵：絕對不重新建立 / load 此元素）---------- */
+  const audio = document.getElementById("bgMusic");
+  audio.volume = 0.55;
+
+  const musicBtn = document.getElementById("musicBtn");
+  const ICON_PLAY = `<div class="bars"><span></span><span></span><span></span><span></span></div>`;
+  const ICON_MUTE = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+      <line x1="23" y1="9" x2="17" y2="15"/>
+      <line x1="17" y1="9" x2="23" y2="15"/>
+    </svg>`;
+
+  function setMusicUI(playing) {
+    musicBtn.classList.toggle("playing", playing);
+    musicBtn.innerHTML = playing ? ICON_PLAY : ICON_MUTE;
+  }
+  setMusicUI(false);
+
+  async function tryPlay() {
+    try {
+      await audio.play();
+      setMusicUI(true);
+    } catch (err) {
+      console.warn("自動播放被瀏覽器阻擋：", err);
+      setMusicUI(false);
+    }
+  }
+  function pauseMusic() {
+    audio.pause();
+    setMusicUI(false);
+  }
+
+  musicBtn.addEventListener("click", () => {
+    if (audio.paused) tryPlay();
+    else pauseMusic();
+  });
+  // audio 事件同步 UI
+  audio.addEventListener("play",  () => setMusicUI(true));
+  audio.addEventListener("pause", () => setMusicUI(false));
+
+  /* ---------- 啟動 ---------- */
+  document.getElementById("startBtn").addEventListener("click", async () => {
+    state.name = (document.getElementById("userName").value || "").trim();
+    state.idx = 0;
+    state.answers = Array(QUESTIONS.length).fill(null);
+
+    // 點擊「開始測驗」這個 user gesture 一併啟動音樂；
+    // 但僅啟動，不會重新 load。之後切螢幕都不會打斷音訊串流。
+    if (audio.paused) tryPlay();
+
+    renderQuestion();
+    showScreen("quiz");
+  });
+
+  document.getElementById("prevBtn").addEventListener("click", goPrev);
+  document.getElementById("nextBtn").addEventListener("click", goNext);
+
+  document.getElementById("restartBtn").addEventListener("click", () => {
+    state.idx = 0;
+    state.answers = Array(QUESTIONS.length).fill(null);
+    document.getElementById("userName").value = "";
+    showScreen("welcome");
+    // 注意：不去動 audio，所以音樂繼續播。
+  });
+
+  /* ---------- 鍵盤快捷鍵：← / → ---------- */
+  document.addEventListener("keydown", (e) => {
+    const active = document.querySelector(".screen.active")?.dataset.screen;
+    if (active !== "quiz") return;
+    if (e.key === "ArrowRight") goNext();
+    if (e.key === "ArrowLeft")  goPrev();
+    if (["1","2","3","4"].includes(e.key)) {
+      const k = parseInt(e.key, 10) - 1;
+      const opts = QUESTIONS[state.idx].opts;
+      if (opts[k]) {
+        state.answers[state.idx] = opts[k].v;
+        renderQuestion();
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

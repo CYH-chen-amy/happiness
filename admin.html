@@ -1,0 +1,844 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>後台 · 幸福的必要條件</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Caveat:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+<style>
+:root,
+[data-theme="day"] {
+  --bg:        #FAF1DD;
+  --surface:   #FFFFFF;
+  --surface-2: #F2E4C9;
+  --ink:       #3D2E1F;
+  --ink-soft:  #6B5440;
+  --muted:     #A89580;
+  --line:      #EAD9B8;
+  --accent:    #DC7A4F;
+  --accent-2:  #B5883A;
+  --accent-3:  #B5883A;
+  --accent-soft: rgba(220,122,79,.13);
+  --shadow:    0 1px 0 rgba(61,46,31,.04), 0 10px 30px -12px rgba(120,80,40,.20);
+  --shadow-lg: 0 1px 0 rgba(61,46,31,.04), 0 36px 60px -28px rgba(120,80,40,.30);
+  --paper:
+    radial-gradient(1200px 600px at 80% -10%, rgba(220,122,79,.13), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(181,136,58,.13), transparent 60%);
+}
+[data-theme="night"] {
+  --bg:        #1B1410;
+  --surface:   #2A1F18;
+  --surface-2: #36281F;
+  --ink:       #FBEBD3;
+  --ink-soft:  #DDC9AB;
+  --muted:     #968275;
+  --line:      #463327;
+  --accent:    #F4A887;
+  --accent-2:  #E0B96B;
+  --accent-3:  #E0B96B;
+  --accent-soft: rgba(244,168,135,.16);
+  --shadow:    0 1px 0 rgba(0,0,0,.4), 0 14px 36px -10px rgba(0,0,0,.55);
+  --shadow-lg: 0 1px 0 rgba(0,0,0,.4), 0 40px 70px -30px rgba(0,0,0,.7);
+  --paper:
+    radial-gradient(1200px 600px at 80% -10%, rgba(244,168,135,.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(224,185,107,.08), transparent 60%);
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Quicksand", "Noto Sans TC", -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  letter-spacing: .01em;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color .8s ease, color .8s ease;
+  min-height: 100vh;
+}
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  background-image:
+    var(--paper),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.5'/></svg>");
+  background-size: auto, 160px 160px;
+  pointer-events: none;
+  opacity: .55;
+  z-index: 0;
+}
+[data-theme="night"] body::before { opacity: .3; }
+
+/* 頂部 */
+.topbar {
+  position: sticky;
+  top: 0;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18px 32px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  z-index: 30;
+}
+.brand {
+  display: flex; align-items: center; gap: 12px;
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-weight: 700;
+  letter-spacing: .15em;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+.brand .lh-icon { width: 22px; height: 22px; color: var(--accent); }
+.brand .sub { font-family: "Caveat", cursive; color: var(--accent); font-size: 18px; letter-spacing: .05em; margin-left: 6px; }
+.top-right { display: flex; gap: 12px; align-items: center; }
+
+.datetime {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 16px;
+  box-shadow: var(--shadow);
+}
+.datetime .time { color: var(--accent); margin-left: 8px; font-variant-numeric: tabular-nums; }
+
+.theme-pill {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px dashed var(--line);
+  border-radius: 999px;
+  padding: 7px 14px;
+  cursor: pointer;
+  letter-spacing: .1em;
+}
+.theme-pill:hover { color: var(--accent); border-color: var(--accent); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-weight: 700;
+  letter-spacing: .1em;
+  font-size: 13px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+  box-shadow: var(--shadow);
+}
+.btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn.danger { background: var(--accent); }
+.btn:disabled { opacity:.4; cursor:not-allowed; }
+
+main { position: relative; z-index: 1; padding: 40px 32px 80px; max-width: 1200px; margin: 0 auto; }
+
+/* ---------- 登入卡 ---------- */
+.login-wrap {
+  min-height: calc(100vh - 80px);
+  display: flex; align-items: center; justify-content: center;
+}
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  padding: 48px 40px;
+  box-shadow: var(--shadow-lg);
+  max-width: 420px;
+  width: 100%;
+}
+.login-card .eyebrow {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-size: 12px;
+  letter-spacing: .35em;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+.login-card h1 {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-weight: 900;
+  font-size: 36px;
+  margin: 0 0 8px;
+  letter-spacing: .02em;
+}
+.login-card .desc {
+  color: var(--muted);
+  margin-bottom: 28px;
+  font-size: 14px;
+}
+.field { margin-bottom: 16px; }
+.field label {
+  display:block;
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-size: 12px;
+  letter-spacing: .2em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.field input {
+  width: 100%;
+  padding: 14px 18px;
+  font: inherit; font-size: 15px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.field input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+.error-msg {
+  margin-top: 14px;
+  padding: 10px 14px;
+  font-size: 13px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 10px;
+  display: none;
+}
+.error-msg.show { display: block; }
+
+/* ---------- 後台 ---------- */
+.dashboard-head {
+  display: flex; flex-wrap: wrap; gap: 16px;
+  justify-content: space-between; align-items: flex-end;
+  margin-bottom: 28px;
+}
+.dashboard-head h1 {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-weight: 900;
+  font-size: clamp(30px, 4vw, 42px);
+  margin: 0 0 4px;
+}
+.dashboard-head .sub { color: var(--muted); font-size: 14px; }
+.dashboard-head .cta { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.user-pill {
+  font-family: "Caveat", cursive;
+  font-size: 18px;
+  color: var(--accent-2);
+  letter-spacing: .05em;
+  margin-right: 6px;
+}
+
+/* 統計卡 */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 22px 24px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.stat-card .label {
+  font-family: "Caveat", cursive;
+  font-size: 18px;
+  color: var(--muted);
+  letter-spacing: .08em;
+}
+.stat-card .num {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-weight: 900;
+  font-size: 40px;
+  margin: 4px 0 0;
+  letter-spacing: .02em;
+}
+.stat-card .num small {
+  font-family: "Noto Sans TC", sans-serif;
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: 6px;
+  letter-spacing: 0;
+}
+.stat-card .emoji { position: absolute; top: 16px; right: 18px; font-size: 26px; opacity: .85; }
+.stat-card .bar {
+  margin-top: 10px;
+  height: 4px;
+  background: var(--line);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.stat-card .bar > i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width .8s cubic-bezier(.2,.7,.2,1);
+}
+.stat-card[data-type="sunflower"] .bar > i { background: #DAA520; }
+.stat-card[data-type="tree"]      .bar > i { background: #9C5A40; }
+.stat-card[data-type="duckweed"]  .bar > i { background: #FF7A45; }
+.stat-card[data-type="cactus"]    .bar > i { background: #A87E5C; }
+
+/* 表格 */
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.table-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+}
+.table-head h2 {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  margin: 0;
+  letter-spacing: .05em;
+}
+.table-head .filter {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.filter-btn {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font: inherit; font-size: 12px;
+  letter-spacing: .1em;
+  cursor: pointer;
+  transition: all .2s;
+}
+.filter-btn:hover { color: var(--accent); border-color: var(--accent); }
+.filter-btn.active { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+
+.table-scroll { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+th, td {
+  text-align: left;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+th {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: .15em;
+  color: var(--muted);
+  text-transform: uppercase;
+  background: var(--surface-2);
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface-2); }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+.tag.sunflower { background: rgba(218,165,32,.20);  color: #8C6510; }
+.tag.tree      { background: rgba(156,90,64,.22);   color: #6B2D1F; }
+.tag.duckweed  { background: rgba(255,122,69,.22);  color: #B85C00; }
+.tag.cactus    { background: rgba(168,126,92,.22);  color: #5C4226; }
+[data-theme="night"] .tag.sunflower { color: #FFE38F; }
+[data-theme="night"] .tag.tree      { color: #D4A088; }
+[data-theme="night"] .tag.duckweed  { color: #FFB07A; }
+[data-theme="night"] .tag.cactus    { color: #F5DEB3; }
+
+.score-pill {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 600;
+  background: var(--surface-2);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.answers-mono {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: .15em;
+}
+
+td.t-name { font-weight: 700; color: var(--ink); }
+td.t-time { color: var(--muted); font-size: 12px; font-family: "JetBrains Mono", monospace; white-space: nowrap; }
+
+.empty {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--muted);
+}
+.empty .ico { font-size: 40px; margin-bottom: 12px; }
+
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+  font-family: "Caveat", cursive;
+  font-size: 22px;
+  letter-spacing: .05em;
+}
+
+@media (max-width: 720px) {
+  .topbar { padding: 14px 18px; }
+  .brand .text, .brand .sub { display: none; }
+  main { padding: 24px 16px 60px; }
+  .login-card { padding: 36px 24px; border-radius: 20px; }
+  th, td { padding: 12px 14px; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <svg class="lh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2 L9 7 H15 Z" />
+      <path d="M9 7 V11 H15 V7" />
+      <path d="M8 11 H16 L17 21 H7 Z" />
+      <line x1="9.5" y1="14" x2="14.5" y2="14" />
+      <circle cx="12" cy="9" r="1.4" fill="currentColor" stroke="none"/>
+    </svg>
+    <span class="text">交大領袖社</span>
+    <span class="sub">· 後台</span>
+  </div>
+  <div class="top-right">
+    <button id="themeToggle" class="theme-pill">自動 · 日</button>
+    <div id="datetime" class="datetime"><span class="date">—</span><span class="time">—:—</span></div>
+    <span id="userPill" class="user-pill" style="display:none;"></span>
+    <button id="logoutBtn" class="btn ghost" style="display:none;">登出</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ 登入畫面 ============ -->
+  <div id="loginView" class="login-wrap">
+    <div class="login-card">
+      <div class="eyebrow">ADMIN ACCESS</div>
+      <h1>後台登入</h1>
+      <div class="desc">請使用 Firebase 已開通的帳號登入。</div>
+
+      <div class="field">
+        <label for="email">EMAIL</label>
+        <input id="email" type="email" autocomplete="email" placeholder="you@example.com" />
+      </div>
+      <div class="field">
+        <label for="password">PASSWORD</label>
+        <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" />
+      </div>
+
+      <button id="loginBtn" class="btn" style="width:100%; justify-content:center; padding:14px;">登入</button>
+      <div id="loginError" class="error-msg"></div>
+    </div>
+  </div>
+
+  <!-- ============ 後台主畫面 ============ -->
+  <div id="dashboardView" style="display:none;">
+
+    <div class="dashboard-head">
+      <div>
+        <h1>幸福的必要條件 · 回覆紀錄</h1>
+        <div class="sub">所有測驗結果即時同步自 Firestore。</div>
+      </div>
+      <div class="cta">
+        <button id="refreshBtn" class="btn ghost">↻ 重新載入</button>
+        <button id="exportBtn"  class="btn">⤓ 匯出 CSV</button>
+      </div>
+    </div>
+
+    <!-- 統計卡 -->
+    <div class="stats" id="stats">
+      <div class="stat-card">
+        <div class="emoji">✦</div>
+        <div class="label">total responses</div>
+        <div class="num"><span id="statTotal">0</span><small>筆</small></div>
+        <div class="bar"><i style="width:100%"></i></div>
+      </div>
+      <div class="stat-card" data-type="sunflower">
+        <div class="emoji">🌿</div>
+        <div class="label">向日葵型</div>
+        <div class="num"><span id="statSunflower">0</span><small id="statSunflowerPct">0%</small></div>
+        <div class="bar"><i id="barSunflower" style="width:0%"></i></div>
+      </div>
+      <div class="stat-card" data-type="tree">
+        <div class="emoji">🌳</div>
+        <div class="label">大樹型</div>
+        <div class="num"><span id="statTree">0</span><small id="statTreePct">0%</small></div>
+        <div class="bar"><i id="barTree" style="width:0%"></i></div>
+      </div>
+      <div class="stat-card" data-type="duckweed">
+        <div class="emoji">🍂</div>
+        <div class="label">浮萍型</div>
+        <div class="num"><span id="statDuckweed">0</span><small id="statDuckweedPct">0%</small></div>
+        <div class="bar"><i id="barDuckweed" style="width:0%"></i></div>
+      </div>
+      <div class="stat-card" data-type="cactus">
+        <div class="emoji">🌵</div>
+        <div class="label">孤島型</div>
+        <div class="num"><span id="statCactus">0</span><small id="statCactusPct">0%</small></div>
+        <div class="bar"><i id="barCactus" style="width:0%"></i></div>
+      </div>
+    </div>
+
+    <!-- 列表 -->
+    <div class="table-wrap">
+      <div class="table-head">
+        <h2>回覆列表</h2>
+        <div class="filter" id="filterBar">
+          <button class="filter-btn active" data-filter="all">全部</button>
+          <button class="filter-btn" data-filter="sunflower">🌿 向日葵</button>
+          <button class="filter-btn" data-filter="tree">🌳 大樹</button>
+          <button class="filter-btn" data-filter="duckweed">🍂 浮萍</button>
+          <button class="filter-btn" data-filter="cactus">🌵 孤島</button>
+        </div>
+      </div>
+      <div id="tableBody">
+        <div class="loading">connecting to firestore…</div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ===================== 邏輯 ===================== -->
+<script type="module">
+  import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+  import {
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import {
+    getFirestore, collection, query, orderBy, onSnapshot, deleteDoc, doc
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import { firebaseConfig } from "./firebase-config.js";
+
+  /* ---------- Firebase 初始化 ---------- */
+  let app, auth, db;
+  try {
+    app  = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db   = getFirestore(app);
+  } catch (err) {
+    showLoginError("Firebase 設定錯誤：" + err.message);
+  }
+
+  /* ---------- DOM ---------- */
+  const $ = (id) => document.getElementById(id);
+  const loginView    = $("loginView");
+  const dashView     = $("dashboardView");
+  const loginBtn     = $("loginBtn");
+  const logoutBtn    = $("logoutBtn");
+  const emailEl      = $("email");
+  const passEl       = $("password");
+  const errorEl      = $("loginError");
+  const userPill     = $("userPill");
+  const refreshBtn   = $("refreshBtn");
+  const exportBtn    = $("exportBtn");
+  const tableBody    = $("tableBody");
+
+  function showLoginError(msg) {
+    errorEl.textContent = msg;
+    errorEl.classList.add("show");
+  }
+  function clearLoginError() {
+    errorEl.classList.remove("show");
+    errorEl.textContent = "";
+  }
+
+  /* ---------- 主題 / 時間 ---------- */
+  const themeBtn = $("themeToggle");
+  let themeMode = "auto";
+  function applyTheme() {
+    const hour = new Date().getHours();
+    let theme = "day";
+    if (themeMode === "auto") {
+      theme = (hour >= 18 || hour < 6) ? "night" : "day";
+      themeBtn.textContent = `自動 · ${theme === "night" ? "夜" : "日"}`;
+    } else {
+      theme = themeMode;
+      themeBtn.textContent = themeMode === "day" ? "日" : "夜";
+    }
+    document.documentElement.dataset.theme = theme;
+  }
+  themeBtn.addEventListener("click", () => {
+    themeMode = themeMode === "auto" ? "day"
+              : themeMode === "day"  ? "night"
+              : "auto";
+    applyTheme();
+  });
+
+  const WEEK = ["日","一","二","三","四","五","六"];
+  function tick() {
+    const now = new Date();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    const w = WEEK[now.getDay()];
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    const dt = $("datetime");
+    dt.querySelector(".date").textContent = `${m} / ${d} （${w}）`;
+    dt.querySelector(".time").textContent = `${hh}:${mm}`;
+    applyTheme();
+  }
+  tick();
+  setInterval(tick, 30 * 1000);
+
+  /* ---------- Auth 流程 ---------- */
+  loginBtn.addEventListener("click", async () => {
+    if (!auth) return;
+    clearLoginError();
+    const email = emailEl.value.trim();
+    const pass  = passEl.value;
+    if (!email || !pass) {
+      showLoginError("請輸入 Email 與密碼。");
+      return;
+    }
+    loginBtn.disabled = true;
+    loginBtn.textContent = "登入中…";
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch (err) {
+      const map = {
+        "auth/invalid-credential": "帳號或密碼錯誤。",
+        "auth/invalid-email":      "Email 格式不正確。",
+        "auth/user-not-found":     "找不到此帳號。",
+        "auth/wrong-password":     "密碼錯誤。",
+        "auth/too-many-requests":  "嘗試次數過多，請稍後再試。",
+      };
+      showLoginError(map[err.code] || ("登入失敗：" + err.message));
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = "登入";
+    }
+  });
+
+  // Enter 鍵登入
+  [emailEl, passEl].forEach(el => {
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") loginBtn.click();
+    });
+  });
+
+  logoutBtn.addEventListener("click", async () => {
+    if (auth) await signOut(auth);
+  });
+
+  /* ---------- 監聽 Auth 狀態 ---------- */
+  let unsubResponses = null;
+
+  if (auth) {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginView.style.display = "none";
+        dashView.style.display  = "block";
+        userPill.style.display  = "inline";
+        logoutBtn.style.display = "inline-flex";
+        userPill.textContent    = "hi, " + (user.email || "admin");
+        startListening();
+      } else {
+        loginView.style.display = "flex";
+        dashView.style.display  = "none";
+        userPill.style.display  = "none";
+        logoutBtn.style.display = "none";
+        if (unsubResponses) { unsubResponses(); unsubResponses = null; }
+      }
+    });
+  }
+
+  /* ---------- 資料 ---------- */
+  const TYPE_INFO = {
+    sunflower: { name: "向日葵型", emoji: "🌿" },
+    tree:      { name: "大樹型",   emoji: "🌳" },
+    duckweed:  { name: "浮萍型",   emoji: "🍂" },
+    cactus:    { name: "孤島型",   emoji: "🌵" },
+  };
+
+  let allResponses = [];
+  let currentFilter = "all";
+
+  function startListening() {
+    tableBody.innerHTML = `<div class="loading">connecting to firestore…</div>`;
+    if (unsubResponses) unsubResponses();
+    const q = query(collection(db, "responses"), orderBy("createdAt", "desc"));
+    unsubResponses = onSnapshot(q, (snap) => {
+      allResponses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      render();
+    }, (err) => {
+      tableBody.innerHTML = `<div class="empty">
+        <div class="ico">⚠️</div>
+        <div>讀取失敗：${err.message}</div>
+        <div style="font-size:12px;margin-top:8px;">請確認 Firestore 規則允許登入後的使用者讀取 <code>responses</code>。</div>
+      </div>`;
+    });
+  }
+
+  refreshBtn.addEventListener("click", () => {
+    if (auth && auth.currentUser) startListening();
+  });
+
+  /* ---------- 篩選 ---------- */
+  document.getElementById("filterBar").addEventListener("click", (e) => {
+    const btn = e.target.closest(".filter-btn");
+    if (!btn) return;
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentFilter = btn.dataset.filter;
+    render();
+  });
+
+  /* ---------- 渲染 ---------- */
+  function render() {
+    // 統計
+    const total = allResponses.length;
+    const counts = { sunflower: 0, tree: 0, duckweed: 0, cactus: 0 };
+    allResponses.forEach(r => {
+      if (counts[r.type] !== undefined) counts[r.type]++;
+    });
+
+    $("statTotal").textContent = total;
+    for (const k of ["sunflower","tree","duckweed","cactus"]) {
+      $("stat" + cap(k)).textContent = counts[k];
+      const pct = total ? Math.round(counts[k] / total * 100) : 0;
+      $("stat" + cap(k) + "Pct").textContent = pct + "%";
+      $("bar"  + cap(k)).style.width = pct + "%";
+    }
+
+    // 列表
+    const list = currentFilter === "all"
+      ? allResponses
+      : allResponses.filter(r => r.type === currentFilter);
+
+    if (list.length === 0) {
+      tableBody.innerHTML = `<div class="empty">
+        <div class="ico">🌾</div>
+        <div>${total === 0 ? "目前還沒有人填寫，等等就會有人來囉～" : "這個分型目前沒有資料。"}</div>
+      </div>`;
+      return;
+    }
+
+    let html = `
+      <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>填寫時間</th>
+            <th>名字</th>
+            <th>分型</th>
+            <th>分數</th>
+            <th>答題（A=4 / B=3 / C=2 / D=1）</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    for (const r of list) {
+      const t = TYPE_INFO[r.type] || { name: r.typeName || r.type, emoji: "·" };
+      html += `
+        <tr>
+          <td class="t-time">${formatTime(r.createdAt)}</td>
+          <td class="t-name">${escape(r.name || "（匿名）")}</td>
+          <td><span class="tag ${r.type}">${t.emoji} ${t.name}</span></td>
+          <td><span class="score-pill">${r.score ?? "-"}</span></td>
+          <td><span class="answers-mono">${formatAnswers(r.answers)}</span></td>
+          <td><button class="filter-btn" data-del="${r.id}" style="border-color:transparent;color:var(--muted);">刪除</button></td>
+        </tr>`;
+    }
+    html += `</tbody></table></div>`;
+    tableBody.innerHTML = html;
+
+    tableBody.querySelectorAll("[data-del]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.del;
+        if (!confirm("確定要刪除這筆回覆嗎？")) return;
+        try {
+          await deleteDoc(doc(db, "responses", id));
+        } catch (err) {
+          alert("刪除失敗：" + err.message);
+        }
+      });
+    });
+  }
+
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  function escape(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+
+  function formatTime(ts) {
+    if (!ts) return "—";
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const day = String(d.getDate()).padStart(2,"0");
+    const hh  = String(d.getHours()).padStart(2,"0");
+    const mm  = String(d.getMinutes()).padStart(2,"0");
+    return `${m}/${day} ${hh}:${mm}`;
+  }
+
+  function formatAnswers(arr) {
+    if (!Array.isArray(arr)) return "—";
+    const map = { 4:"A", 3:"B", 2:"C", 1:"D" };
+    return arr.map(v => map[v] || "?").join(" · ");
+  }
+
+  /* ---------- CSV 匯出 ---------- */
+  exportBtn.addEventListener("click", () => {
+    if (!allResponses.length) {
+      alert("目前沒有資料可匯出。");
+      return;
+    }
+    const rows = [["填寫時間","名字","分型","分數","Q1","Q2","Q3","Q4","Q5"]];
+    for (const r of allResponses) {
+      const t = TYPE_INFO[r.type]?.name || r.typeName || r.type || "";
+      const a = r.answers || [];
+      const map = {4:"A",3:"B",2:"C",1:"D"};
+      rows.push([
+        formatTime(r.createdAt),
+        r.name || "",
+        t,
+        r.score ?? "",
+        ...[0,1,2,3,4].map(i => map[a[i]] || "")
+      ]);
+    }
+    const csv = rows.map(row =>
+      row.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")
+    ).join("\n");
+    // 加上 UTF-8 BOM 讓 Excel 正確顯示中文
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const stamp = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `幸福的必要條件_responses_${stamp}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+</script>
+
+</body>
+</html>
