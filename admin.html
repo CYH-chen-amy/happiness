@@ -837,17 +837,18 @@ function formatAnswers(arr) {
         r.score ?? "",
         ...[0,1,2,3,4].map(i => (PER_Q[i] && PER_Q[i][a[i]]) || "")
       ]);
+    }
     const csv = rows.map(row =>
       row.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")
     ).join("\n");
     // 加上 UTF-8 BOM 讓 Excel 正確顯示中文
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const link = document.createElement("a");
     const stamp = new Date().toISOString().slice(0,10);
-    a.href = url;
-    a.download = `幸福的必要條件_responses_${stamp}.csv`;
-    a.click();
+    link.href = url;
+    link.download = `幸福的必要條件_responses_${stamp}.csv`;
+    link.click();
     URL.revokeObjectURL(url);
   });
 </script>
