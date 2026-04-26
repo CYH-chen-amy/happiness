@@ -136,7 +136,67 @@ body::before {
   transition: opacity 1s ease;
 }
 [data-theme="night"] .sakura-layer { opacity: 0; }
+/* ----------------------------------------------------------
+   👣 夜晚腳印（只在夜間主題出現）— 一串慢慢走過的腳印，像是有人正回家
+   ---------------------------------------------------------- */
+.footsteps-layer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 8%;
+  height: 60px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+[data-theme="night"] .footsteps-layer { opacity: 1; }
 
+.footstep {
+  position: absolute;
+  bottom: 0;
+  width: 22px;
+  height: 30px;
+  opacity: 0;
+  color: var(--accent-2);   /* 用副副色（鼠尾草奶油），溫暖不搶戲 */
+  filter: drop-shadow(0 0 6px rgba(168,197,160,.4));
+  animation: footstep-appear 22s linear infinite;
+}
+.footstep.right { transform: rotate(8deg); }
+.footstep.left  { transform: rotate(-8deg); }
+
+@keyframes footstep-appear {
+  0%   { opacity: 0; }
+  3%   { opacity: .85; }     /* 踏下：清晰浮現 */
+  18%  { opacity: .55; }     /* 慢慢淡 */
+  35%  { opacity: 0; }       /* 完全消失 */
+  100% { opacity: 0; }       /* 等下一輪 */
+}
+
+/* 一串腳印，由左至右、左右腳交替，每一步間隔約 1.2 秒 */
+.footstep:nth-child(1)  { left:  2%; animation-delay:  0s; }
+.footstep:nth-child(2)  { left:  7%; animation-delay:  1.2s; }
+.footstep:nth-child(3)  { left: 12%; animation-delay:  2.4s; }
+.footstep:nth-child(4)  { left: 17%; animation-delay:  3.6s; }
+.footstep:nth-child(5)  { left: 22%; animation-delay:  4.8s; }
+.footstep:nth-child(6)  { left: 27%; animation-delay:  6.0s; }
+.footstep:nth-child(7)  { left: 32%; animation-delay:  7.2s; }
+.footstep:nth-child(8)  { left: 37%; animation-delay:  8.4s; }
+.footstep:nth-child(9)  { left: 42%; animation-delay:  9.6s; }
+.footstep:nth-child(10) { left: 47%; animation-delay: 10.8s; }
+.footstep:nth-child(11) { left: 52%; animation-delay: 12.0s; }
+.footstep:nth-child(12) { left: 57%; animation-delay: 13.2s; }
+.footstep:nth-child(13) { left: 62%; animation-delay: 14.4s; }
+.footstep:nth-child(14) { left: 67%; animation-delay: 15.6s; }
+.footstep:nth-child(15) { left: 72%; animation-delay: 16.8s; }
+.footstep:nth-child(16) { left: 77%; animation-delay: 18.0s; }
+.footstep:nth-child(17) { left: 82%; animation-delay: 19.2s; }
+.footstep:nth-child(18) { left: 87%; animation-delay: 20.4s; }
+
+/* 微微的垂直錯落，模擬左右腳一前一後的步伐感 */
+.footstep:nth-child(odd)  { bottom: 4px; }
+.footstep:nth-child(even) { bottom: 14px; }
+  
 .sakura {
   position: absolute;
   top: -40px;
