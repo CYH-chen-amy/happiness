@@ -747,7 +747,7 @@ td.t-time { color: var(--muted); font-size: 12px; font-family: "JetBrains Mono",
             <th>名字</th>
             <th>分型</th>
             <th>分數</th>
-            <th>答題（A=4 / B=3 / C=2 / D=1）</th>
+            <th>答題</th>
             <th></th>
           </tr>
         </thead>
@@ -799,10 +799,17 @@ td.t-time { color: var(--muted); font-size: 12px; font-family: "JetBrains Mono",
     return `${m}/${day} ${hh}:${mm}`;
   }
 
-  function formatAnswers(arr) {
+function formatAnswers(arr) {
     if (!Array.isArray(arr)) return "—";
-    const map = { 4:"A", 3:"B", 2:"C", 1:"D" };
-    return arr.map(v => map[v] || "?").join(" · ");
+    // 每一題的 ABCD 分值不同，所以要按題號對應
+    const PER_Q = [
+      { 4:"A", 3:"B", 2:"C", 1:"D" },          // Q1
+      { 8:"A", 6:"B", 4:"C", 2:"D" },          // Q2
+      { 6:"A", 4.5:"B", 3:"C", 1.5:"D" },      // Q3
+      { 8:"A", 6:"B", 4:"C", 2:"D" },          // Q4
+      { 6:"A", 4.5:"B", 3:"C", 1.5:"D" },      // Q5
+    ];
+    return arr.map((v, i) => (PER_Q[i] && PER_Q[i][v]) || "?").join(" · ");
   }
 
   /* ---------- CSV 匯出 ---------- */
@@ -815,15 +822,21 @@ td.t-time { color: var(--muted); font-size: 12px; font-family: "JetBrains Mono",
     for (const r of allResponses) {
       const t = TYPE_INFO[r.type]?.name || r.typeName || r.type || "";
       const a = r.answers || [];
-      const map = {4:"A",3:"B",2:"C",1:"D"};
+      // 每題的 ABCD 分值不同，逐題對應
+      const PER_Q = [
+        { 4:"A", 3:"B", 2:"C", 1:"D" },
+        { 8:"A", 6:"B", 4:"C", 2:"D" },
+        { 6:"A", 4.5:"B", 3:"C", 1.5:"D" },
+        { 8:"A", 6:"B", 4:"C", 2:"D" },
+        { 6:"A", 4.5:"B", 3:"C", 1.5:"D" },
+      ];
       rows.push([
         formatTime(r.createdAt),
         r.name || "",
         t,
         r.score ?? "",
-        ...[0,1,2,3,4].map(i => map[a[i]] || "")
+        ...[0,1,2,3,4].map(i => (PER_Q[i] && PER_Q[i][a[i]]) || "")
       ]);
-    }
     const csv = rows.map(row =>
       row.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")
     ).join("\n");
