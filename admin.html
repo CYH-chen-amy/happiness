@@ -434,20 +434,19 @@ td.t-time { color: var(--muted); font-size: 12px; font-family: "JetBrains Mono",
 
 <main>
 
-  <!-- ============ 登入畫面 ============ -->
+<!-- ============ 登入畫面 ============ -->
   <div id="loginView" class="login-wrap">
     <div class="login-card">
       <div class="eyebrow">ADMIN ACCESS</div>
       <h1>後台登入</h1>
-      <div class="desc">請使用 Firebase 已開通的帳號登入。</div>
+      <div class="desc">穎萱，歡迎回來 ☕</div>
+
+      <!-- Email 欄位仍要留著但隱藏，因為 JS 會用到 -->
+      <input id="email" type="hidden" value="yingxuan.hs14@nycu.edu.tw" />
 
       <div class="field">
-        <label for="email">EMAIL</label>
-        <input id="email" type="email" autocomplete="email" placeholder="you@example.com" />
-      </div>
-      <div class="field">
         <label for="password">PASSWORD</label>
-        <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" />
+        <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" autofocus />
       </div>
 
       <button id="loginBtn" class="btn" style="width:100%; justify-content:center; padding:14px;">登入</button>
@@ -656,7 +655,7 @@ td.t-time { color: var(--muted); font-size: 12px; font-family: "JetBrains Mono",
         dashView.style.display  = "block";
         userPill.style.display  = "inline";
         logoutBtn.style.display = "inline-flex";
-        userPill.textContent    = "hi, " + (user.email || "admin");
+        userPill.textContent    = "hi, 穎萱";
         startListening();
       } else {
         loginView.style.display = "flex";
