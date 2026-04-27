@@ -862,6 +862,7 @@ function formatAnswers(arr) {
         r.joinEvent ? "✓" : "",
         ...[0,1,2,3,4].map(i => (PER_Q[i] && PER_Q[i][a[i]]) || "")
       ]);
+      }
     const csv = rows.map(row =>
       row.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")
     ).join("\n");
