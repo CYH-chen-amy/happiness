@@ -646,6 +646,67 @@ h1.title .quiet {
   margin: 6px 0 22px;
   letter-spacing: .05em;
 }
+  .join-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 22px;
+  cursor: pointer;
+  user-select: none;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px dashed var(--line);
+  transition: all .25s ease;
+}
+.join-check:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.join-check input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.join-box {
+  width: 20px; height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all .25s ease;
+  position: relative;
+}
+.join-box::after {
+  content: "";
+  width: 10px;
+  height: 6px;
+  border-left: 2px solid var(--bg);
+  border-bottom: 2px solid var(--bg);
+  transform: rotate(-45deg) scale(0);
+  transition: transform .2s ease;
+  margin-bottom: 2px;
+}
+.join-check input:checked + .join-box {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.join-check input:checked + .join-box::after {
+  transform: rotate(-45deg) scale(1);
+}
+.join-check input:checked ~ .join-text {
+  color: var(--accent);
+  font-weight: 700;
+}
+.join-text {
+  font-family: "Quicksand", "Noto Sans TC", sans-serif;
+  font-size: 15px;
+  color: var(--ink-soft);
+  letter-spacing: .05em;
+  transition: color .25s, font-weight .25s;
+}
 .event-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -857,6 +918,11 @@ h1.title .quiet {
     <div class="event">
       <div class="label">— 想聊聊你的家、你的心嗎？—</div>
       <div class="club">第五堂社課・歡迎您</div>
+      <label class="join-check">
+        <input type="checkbox" id="joinEvent" />
+        <span class="join-box"></span>
+        <span class="join-text">我想參加本週社課</span>
+      </label>
       <div class="event-grid">
         <div class="item"><div class="k">date</div><div class="v">4 / 30（四）</div></div>
         <div class="item"><div class="k">time</div><div class="v">19:00 – 21:30<br/><span style="font-size:13px;color:var(--muted);">18:50 開放報到</span></div></div>
@@ -1090,6 +1156,7 @@ h1.title .quiet {
         type: type.key,
         typeName: type.name,
         answers: state.answers.slice(),
+        joinEvent: document.getElementById("joinEvent")?.checked || false,
       }).then(res => {
         if (res && res.ok) showToast("已雲端記錄 ☁︎");
       });
