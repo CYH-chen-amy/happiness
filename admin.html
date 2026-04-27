@@ -374,6 +374,25 @@ tr:hover td { background: var(--surface-2); }
   border-radius: 6px;
   font-size: 13px;
 }
+  .join-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .05em;
+}
+.join-tag.yes {
+  background: rgba(118,160,122,.20);
+  color: #3A6429;
+}
+.join-tag.no {
+  color: var(--muted);
+  letter-spacing: 0;
+  font-weight: 400;
+}
+[data-theme="night"] .join-tag.yes { color: #A8C5A0; }
 
 .answers-mono {
   font-family: "JetBrains Mono", monospace;
@@ -508,6 +527,7 @@ td.t-time { color: var(--muted); font-size: 12px; font-family: "JetBrains Mono",
         <h2>回覆列表</h2>
         <div class="filter" id="filterBar">
           <button class="filter-btn active" data-filter="all">全部</button>
+          <button class="filter-btn" data-filter="join">✓ 想參加</button>
           <button class="filter-btn" data-filter="sunflower">🌿 向日葵</button>
           <button class="filter-btn" data-filter="tree">🌳 大樹</button>
           <button class="filter-btn" data-filter="duckweed">🍂 浮萍</button>
@@ -728,7 +748,9 @@ td.t-time { color: var(--muted); font-size: 12px; font-family: "JetBrains Mono",
     // 列表
     const list = currentFilter === "all"
       ? allResponses
-      : allResponses.filter(r => r.type === currentFilter);
+      : currentFilter === "join"
+        ? allResponses.filter(r => r.joinEvent === true)
+        : allResponses.filter(r => r.type === currentFilter);
 
     if (list.length === 0) {
       tableBody.innerHTML = `<div class="empty">
@@ -747,6 +769,7 @@ td.t-time { color: var(--muted); font-size: 12px; font-family: "JetBrains Mono",
             <th>名字</th>
             <th>分型</th>
             <th>分數</th>
+            <th>參加</th>
             <th>答題</th>
             <th></th>
           </tr>
@@ -761,6 +784,7 @@ td.t-time { color: var(--muted); font-size: 12px; font-family: "JetBrains Mono",
           <td class="t-name">${escape(r.name || "（匿名）")}</td>
           <td><span class="tag ${r.type}">${t.emoji} ${t.name}</span></td>
           <td><span class="score-pill">${r.score ?? "-"}</span></td>
+          <td><span class="join-tag ${r.joinEvent ? 'yes' : 'no'}">${r.joinEvent ? '✓ 想參加' : '—'}</span></td>
           <td><span class="answers-mono">${formatAnswers(r.answers)}</span></td>
           <td><button class="filter-btn" data-del="${r.id}" style="border-color:transparent;color:var(--muted);">刪除</button></td>
         </tr>`;
@@ -818,7 +842,7 @@ function formatAnswers(arr) {
       alert("目前沒有資料可匯出。");
       return;
     }
-    const rows = [["填寫時間","名字","分型","分數","Q1","Q2","Q3","Q4","Q5"]];
+    const rows = [["填寫時間","名字","分型","分數","參加社課","Q1","Q2","Q3","Q4","Q5"]];
     for (const r of allResponses) {
       const t = TYPE_INFO[r.type]?.name || r.typeName || r.type || "";
       const a = r.answers || [];
@@ -835,9 +859,9 @@ function formatAnswers(arr) {
         r.name || "",
         t,
         r.score ?? "",
+        r.joinEvent ? "✓" : "",
         ...[0,1,2,3,4].map(i => (PER_Q[i] && PER_Q[i][a[i]]) || "")
       ]);
-    }
     const csv = rows.map(row =>
       row.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")
     ).join("\n");
